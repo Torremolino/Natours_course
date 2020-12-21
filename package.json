@@ -1,0 +1,42 @@
+{
+  "name": "4-natours",
+  "version": "1.0.0",
+  "description": "aprendidendo node-express y mongodb",
+  "main": "app.js",
+  "scripts": {
+    "start": "nodemon server.js",
+    "start:prod": "set NODE_ENV=production& nodemon server.js",
+    "debug": "ndb server.js"
+  },
+  "author": "Ricardo Areán García",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.21.0",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "express-mongo-sanitize": "^2.0.0",
+    "express-rate-limit": "^5.1.3",
+    "helmet": "^3.23.3",
+    "hpp": "^0.2.3",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.9.10",
+    "morgan": "^1.10.0",
+    "nodemailer": "^6.4.8",
+    "pug": "^3.0.0",
+    "slugify": "^1.4.0",
+    "validator": "^13.0.0",
+    "xss-clean": "^0.1.1"
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb": "^18.1.0",
+    "eslint-config-prettier": "^6.10.1",
+    "eslint-plugin-import": "^2.20.2",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.1.3",
+    "eslint-plugin-react": "^7.19.0",
+    "prettier": "^2.0.4"
+  }
+}
