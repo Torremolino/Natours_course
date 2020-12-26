@@ -70,6 +70,14 @@ exports.login = catchAsync(async (req, res, next) => {
   createAndSendToken(user, 200, res);
 });
 
+exports.logout = (req, res) => {
+  res.cookie('jwt', 'loggedout', {
+    expires: new Date(),
+    httpOnly: true,
+  });
+  res.status(200).json({ status: 'success' });
+};
+
 exports.protect = catchAsync(async (req, res, next) => {
   // 1) Comprobar si existe algún token
   let token;
@@ -79,6 +87,8 @@ exports.protect = catchAsync(async (req, res, next) => {
     req.headers.authorization.startsWith('Bearer')
   ) {
     token = req.headers.authorization.split(' ')[1];
+  } else if (req.cookies.jwt) {
+    token = req.cookies.jwt;
   }
 
   if (!token) {
@@ -106,10 +116,43 @@ exports.protect = catchAsync(async (req, res, next) => {
     );
   }
 
-  // GRAND ACCESS TO PROTECTED ROUTE
+  // OTORGAR ACCESO A LA RUTA PROTEGIDA - GRANT ACCESS TO PROTECTED ROUTE
   req.user = currentUser;
+  res.locals.user = currentUser;
   next();
 });
+
+// Sólo para renderizar páginas, no habrá errores de retorno!!!
+exports.isLoggedIn = async (req, res, next) => {
+  // 1) Comprobar si existe algún token. El token siempre vendrá desde una cookie
+  if (req.cookies.jwt) {
+    try {
+      // 2) Comprobar si el token es válido
+      const decoded = await promisify(jwt.verify)(
+        req.cookies.jwt,
+        process.env.JWT_SECRET
+      );
+
+      // 3) Comprobar si el usuario todavía existe
+      const currentUser = await User.findById(decoded.id);
+      if (!currentUser) {
+        return next();
+      }
+
+      // 4)Comprobar si el usuario ha cambiado el password desde que se generó el token
+      if (currentUser.changedPasswordAfter(decoded.iat)) {
+        return next();
+      }
+
+      // EL USUARIO ESTÁ LOGGEADO
+      res.locals.user = currentUser;
+      return next();
+    } catch (err) {
+      return next();
+    }
+  }
+  next();
+};
 
 exports.restricTo = (...roles) => {
   return (req, res, next) => {

@@ -2,15 +2,15 @@ extends base
 include _reviewCard
 
 block append head
-    // para usar LEAFLET
-    link(rel='stylesheet' href='https://unpkg.com/leaflet@1.6.0/dist/leaflet.css')
-    script(src='https://unpkg.com/leaflet@1.6.0/dist/leaflet.js')
-    script(src='/js/leaflet.js' defer)
+    //- para usar LEAFLET
+    //- link(rel='stylesheet' href='https://unpkg.com/leaflet@1.6.0/dist/leaflet.css')
+    //- script(src='https://unpkg.com/leaflet@1.6.0/dist/leaflet.js')
+    //- script(src='/js/leaflet.js' defer)
     
-    // para usar MAPBOX
-    //script(src='https://api.mapbox.com/mapbox-gl-js/v0.54.0/mapbox-gl.js')
-    //link(href='https://api.mapbox.com/mapbox-gl-js/v0.54.0/mapbox-gl.css' rel='stylesheet')
-    //script(src='/js/mapbox.js' defer)
+    //- para usar MAPBOX
+    script(src='https://api.mapbox.com/mapbox-gl-js/v0.54.0/mapbox-gl.js')
+    link(href='https://api.mapbox.com/mapbox-gl-js/v0.54.0/mapbox-gl.css' rel='stylesheet')
+    //- script(src='/js/mapbox.js' defer)
 
 mixin overviewBox(label, text, icon)
   .overview-box__detail

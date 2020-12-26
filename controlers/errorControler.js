@@ -24,33 +24,61 @@ const handleJWTError = () =>
 const handleJWTErrorExpired = () =>
   new AppError('El token ha cadaucado, Logéate de nuevo!!', 401);
 
-const sendErrorDev = (err, res) => {
-  res.status(err.statusCode).json({
-    status: err.status,
-    error: err,
-    message: err.message,
-    stack: err.stack,
+const sendErrorDev = (err, req, res) => {
+  // A) API
+  if (req.originalUrl.startsWith('/api')) {
+    return res.status(err.statusCode).json({
+      status: err.status,
+      error: err,
+      message: err.message,
+      stack: err.stack,
+    });
+  }
+
+  // B) WEB
+  console.error('ERROR 💥', err);
+  return res.status(err.statusCode).render('error', {
+    title: 'Algo ha salido mal!',
+    msg: err.message,
   });
 };
 
-const sendErrorProd = (err, res) => {
-  // OPERATIONAL, trusted error: send message to client
-  if (err.isOperational) {
-    res.status(err.statusCode).json({
-      status: err.status,
-      message: err.message,
-    });
-    // Program error or other unknown error: don't leak error details
-  } else {
-    // 1) Log error
-    console.error('ERROR --- ', err);
-
-    // 2)Send generic message
-    res.status(500).json({
+const sendErrorProd = (err, req, res) => {
+  // A) API
+  if (req.originalUrl.startsWith('/api')) {
+    // OPERATIONAL, errores confiables: enviar mensaje al cliente
+    if (err.isOperational) {
+      return res.status(err.statusCode).json({
+        status: err.status,
+        message: err.message,
+      });
+    }
+    // ERRORES DE PROGRAMACIÓN o otros errores desconocidos: no enviar detalles del error
+    // 1- Log error
+    console.error('ERROR 💥', err);
+    // 2- Enviar mensaje genérico
+    return res.status(500).json({
       status: 'error',
       message: 'Algo muy malo ha pasado....',
     });
   }
+  // WEB
+  // OPERATIONAL, errores confiables: enviar mensaje al cliente
+  if (err.isOperational) {
+    console.log(err);
+    return res.status(err.statusCode).render('error', {
+      title: 'Algo ha salido mal!',
+      msg: err.message,
+    });
+  }
+  // ERRORES DE PROGRAMACIÓN o otros errores desconocidos: no enviar detalles del error
+  // 1- Log error
+  console.error('ERROR 💥', err);
+  // 2- Enviar mensaje genérico
+  return res.status(err.statusCode).render('error', {
+    title: 'Algo ha salido mal!',
+    msg: 'Por favor inténtalo más tarde.',
+  });
 };
 
 module.exports = (err, req, res, next) => {
@@ -59,9 +87,10 @@ module.exports = (err, req, res, next) => {
   err.status = err.status || 'error';
 
   if (process.env.NODE_ENV === 'development') {
-    sendErrorDev(err, res);
+    sendErrorDev(err, req, res);
   } else if (process.env.NODE_ENV === 'production') {
     let error = { ...err };
+    error.message = err.message;
 
     if (error.name === 'CastError') error = handleCastErrorDB(error);
     if (err.code === 11000) error = handleDuplicateFieldsDB(error);
@@ -69,5 +98,7 @@ module.exports = (err, req, res, next) => {
       error = handleValidationErrorDB(error);
     if (error.name === 'JsonWebToken') error = handleJWTError();
     if (error.name === 'TokenExpiredError') error = handleJWTErrorExpired();
+
+    sendErrorProd(error, req, res);
   }
 };
