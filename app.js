@@ -16,6 +16,7 @@ const reviewRouter = require('./routes/reviewRoutes');
 const bookingRouter = require('./routes/bookingRoutes');
 const viewRoutes = require('./routes/viewRoutes');
 
+// Star express app
 const app = express();
 
 app.set('view engine', 'pug');
