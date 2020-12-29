@@ -1,6 +1,7 @@
 //const { render } = require('pug');
 const Tour = require('../models/tourModel');
 const User = require('../models/userModel');
+const Booking = require('../models/bookingModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 
@@ -66,5 +67,18 @@ exports.updateUserData = catchAsync(async (req, res, next) => {
   res.status(200).render('account', {
     title: 'Mi cuenta',
     user: updateUser,
+  });
+});
+
+exports.getMyTours = catchAsync(async (req, res, next) => {
+  // Esto se puede realizar con un populate
+  // 1) Encontrar todas las reservas
+  const bookings = await Booking.find({ user: req.user.id });
+  // 2) Encontrar todos los tours con los Ids
+  const tourIDs = bookings.map((el) => el.tour);
+  const tours = await Tour.find({ _id: { $in: tourIDs } }); //encuentra todos los tours con el Id presentes en el array tourIDs
+  res.status(200).render('overview', {
+    title: 'My tours',
+    tours,
   });
 });

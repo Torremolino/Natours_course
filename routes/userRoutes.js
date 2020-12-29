@@ -17,7 +17,12 @@ router.use(authControler.protect); // con esto protejo todas las rutas que apare
 router.patch('/updateMyPassword', authControler.updatePassword);
 
 router.get('/me', userControler.getMe, userControler.getUser);
-router.patch('/updateMe', userControler.updateMe);
+router.patch(
+  '/updateMe',
+  userControler.uploadUserPhoto,
+  userControler.resizeUserPhoto,
+  userControler.updateMe
+);
 router.delete('/deleteMe', userControler.deleteMe);
 
 // rutas sólo permitidas para los administradores
