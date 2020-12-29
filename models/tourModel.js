@@ -193,7 +193,7 @@ tourSchema.pre('aggregate', function (next) {
 tourSchema.pre('aggregate', function (next) {
   if (!Object.keys(this.pipeline()[0])[0] === '$geoNear')
     this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
-  console.log(this.pipeline());
+  //console.log(this.pipeline());
   next();
 });
 
