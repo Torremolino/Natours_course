@@ -33,7 +33,7 @@ mongoose
 //console.log(process.env);
 
 //OTHER
-const port = process.env.port || 3000;
+const port = process.env.PORT || 3000;
 const server = app.listen(port, () => {
   console.log(`Àpp funcionando en el puerto ${port}....`);
 });
