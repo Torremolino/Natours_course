@@ -26,13 +26,7 @@ mongoose
   })
   .then(() => console.log('Base de datos conectada'));
 
-//ERROR HANDLING CONFIGURATIONS
-
-//ENVOIREMENT CONFIGURATIONS
-
-//console.log(process.env);
-
-//OTHER
+// ARRANCAR EL SERVIDOR
 const port = process.env.PORT || 3000;
 const server = app.listen(port, () => {
   console.log(`Àpp funcionando en el puerto ${port}....`);
@@ -47,7 +41,7 @@ process.on('unhandledRejection', (err) => {
 });
 
 process.on('SIGTERM', () => {
-  //esto es para apagar el servidor a la señal SIGTERM de heroku
+  //esto es para apagar el servidor a la señal SIGTERM de heroku CADA 24H
   console.log('👋 SIGTERM RECIBIDO, apagando servidor adecuadamente 👋 👋 ');
   server.close(() => {
     console.log('💥 Proceso terminado!');

@@ -1,7 +1,7 @@
+//const APIFeatures = require('../utils/apiFeatures');
 const multer = require('multer');
 const sharp = require('sharp');
 const Tour = require('../models/tourModel');
-//const APIFeatures = require('../utils/apiFeatures');
 const catchAsync = require('../utils/catchAsync');
 const factory = require('./handlerFactory');
 const AppError = require('../utils/appError');
@@ -44,7 +44,7 @@ exports.resizeTourImages = catchAsync(async (req, res, next) => {
 
   if (!req.files.imageCover || !req.files.images) return next();
 
-  // 1) Cover images
+  // 1) Cover image
   req.body.imageCover = `tour-${req.params.id}-${Date.now()}-cover.jpeg`;
   await sharp(req.files.imageCover[0].buffer)
     .resize(2000, 1333)
@@ -195,25 +195,25 @@ exports.getAlltours = factory.getAll(Tour);
 
 exports.getTour = factory.getOne(Tour, { path: 'reviews' });
 
-//exports.getTour = catchAsync(async (req, res, next) => {
-//console.log(req.params);
-//const id = req.params.id * 1; //para convertir un string a un number xq lo recibimos como un string
-// const tour = tours.find((el) => el.id === id);
+/* exports.getTour = catchAsync(async (req, res, next) => {
+  console.log(req.params);
+  const id = req.params.id * 1; //para convertir un string a un number xq lo recibimos como un string
+  const tour = tours.find((el) => el.id === id);
 
-//  const tour = await Tour.findById(req.params.id).populate('reviews');
-//const tour = await Tour.findOne({_id: req.params.id})
+  const tour = await Tour.findById(req.params.id).populate('reviews');
+  const tour = await Tour.findOne({ _id: req.params.id });
 
-//  if (!tour) {
-//    return next(new AppError('No existen tours para dicho ID', 404));
-//  }
+  if (!tour) {
+    return next(new AppError('No existen tours para dicho ID', 404));
+  }
 
-//  res.status(200).json({
-//    status: 'success',
-//    data: {
-//      tours: tour,
-//    },
-//  });
-//});
+  res.status(200).json({
+    status: 'success',
+    data: {
+      tours: tour,
+    },
+  });
+}); */
 
 exports.createTour = factory.createOne(Tour);
 /*exports.createTour = catchAsync(async (req, res, next) => {
@@ -225,6 +225,7 @@ exports.createTour = factory.createOne(Tour);
     },
   });
 });*/
+
 /*exports.createTour = async (req, res) => {
   try {
     // const newTour = new Tour({})
@@ -288,7 +289,7 @@ exports.getTourStats = catchAsync(async (req, res, next) => {
         //_id: '$difficulty',
         _id: { $toUpper: '$difficulty' },
         //_id: '$ratingsAverage',
-        numTours: { $sum: 1 },
+        numTours: { $sum: 1 }, // agrega 1 para cada uno de los documentos que pasan por esta aggregation-pipeline
         numRatings: { $sum: '$ratingQuantity' },
         avgRating: { $avg: '$ratingsAverage' },
         avgPrice: { $avg: '$price' },
@@ -301,7 +302,7 @@ exports.getTourStats = catchAsync(async (req, res, next) => {
     //   $match: {
     //     _id: { $ne: 'EASY' },
     //   },
-    // },
+    // }
   ]);
   res.status(200).json({
     status: 'success',
@@ -340,12 +341,12 @@ exports.getMonthyPlan = catchAsync(async (req, res, next) => {
     {
       $project: {
         _id: 0,
-      },
+      }, // oculta el campo _id
     },
     {
       $sort: {
         numTourStarts: -1,
-      },
+      }, // descendente
     },
     {
       $limit: 12,
@@ -365,7 +366,9 @@ exports.getMonthyPlan = catchAsync(async (req, res, next) => {
 exports.getToursWithin = catchAsync(async (req, res, next) => {
   const { distance, latlng, unit } = req.params;
   const [lat, lng] = latlng.split(',');
+  // Radio de la tierra en millas y km
   const radius = unit === 'mi' ? distance / 3963.2 : distance / 6378.1;
+
   if (!lat || !lng) {
     next(
       new AppError(
@@ -403,6 +406,7 @@ exports.getDistances = catchAsync(async (req, res, next) => {
     );
   }
 
+  // Para realizar los cálculos, aggregaion-pipeline
   const distances = await Tour.aggregate([
     {
       $geoNear: {

@@ -18,6 +18,7 @@ const factory = require('./handlerFactory');
 const multerStorage = multer.memoryStorage();
 
 const multerFilter = (req, file, cb) => {
+  // Se puede usar esto para todo tipo de archivos ... SVG, etc.
   if (file.mimetype.startsWith('image')) {
     cb(null, true);
   } else {
@@ -112,6 +113,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 });
 
 exports.deleteMe = catchAsync(async (req, res, next) => {
+  // Sólo funciona para usuario logeados, por lo que podemos usar req.user.id
   await User.findByIdAndUpdate(req.user.id, { active: false });
   res.status(204).json({
     status: 'sucess',

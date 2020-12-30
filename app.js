@@ -2,6 +2,7 @@ const path = require('path');
 const express = require('express');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
+const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
@@ -22,7 +23,8 @@ const viewRoutes = require('./routes/viewRoutes');
 // Star express app
 const app = express();
 
-app.enable('trust proxy'); //Cambiado para heroku ver authControler.js
+//Relacionado con probar si una conexión es segura o no cuando tiene su aplicación implementada en Heroku ---->ver authControler.js
+app.enable('trust proxy');
 
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
@@ -43,41 +45,43 @@ app.options('*', cors());
 //app.use(express.static(`${__dirname}/starter/public`));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Set secury HTTP headers
-app.use(helmet());
+// Establecer encabezados HTTP seguros
+app.use(helmet()); // helmet() debe estar el primero en nuestro middleware stack
 
 //Development logging
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
-// Limit requests from same API
+// Limitar las solicitudes de la misma API
+// Hacker protection - 'brute force' protection
 const limiter = rateLimit({
   max: 100,
   windowMs: 60 * 60 * 1000,
-  message: 'Too many requests from this IP, please try again in an hour!',
+  message: 'Demasiadas solicitudes desde esta IP, pruebe otra vez en una hora!',
 });
 app.use('/api', limiter);
 
 // lo colocamos aqui xp stripe necesita el webhook en la RAW version
 app.post(
   '/webhook-checkout',
-  express.raw({ type: 'application/json' }),
+  bodyParser.raw({ type: 'application/json' }),
   bookingControler.webhookCheckout
 );
 
-//Body parser, reading data from body into req.body
+// Body parser, reading data from body into req.body
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cookieParser());
 
-//Data sanitization against NoSQL query injection
+// Saneamiento de datos contra la inyección de consultas NoSQL: limpia los datos del código malicioso
 app.use(mongoSanitize());
 
-//Data sanintization against XSS
+// Saneamiento de datos contra XSS
 app.use(xss());
 
-//Prevent parameter pollution
+// Previsión contra contaminación de parámetros.
+// Permite duplicados en la cadena de consulta para propiedades en la lista blanca.
 app.use(
   hpp({
     whitelist: [
@@ -134,5 +138,5 @@ app.all('*', (req, res, next) => {
 
 app.use(glogarErrorHandler);
 
-// 4)START THE SERVER
+// 4)ARRANCA EL SERVIDOR
 module.exports = app;

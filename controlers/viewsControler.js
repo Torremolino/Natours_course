@@ -11,6 +11,8 @@ exports.getOverview = catchAsync(async (req, res, next) => {
 
   // 2)Construir la plantilla
   // 3)Render la plantilla con los datos de 1)
+  //    Estamos pasando datos a las plantillas pug usando la función de render.
+  //    Todo lo que pongamos en la función de renderización será una variable dentro de las plantillas pug.
 
   res.status(200).render('overview', {
     title: 'All tours',
@@ -19,7 +21,7 @@ exports.getOverview = catchAsync(async (req, res, next) => {
 });
 
 exports.getTour = catchAsync(async (req, res, next) => {
-  // Tomar los datos desde la colección
+  // Tomar los datos desde la colección incluidas las reviews
   const tour = await Tour.findOne({ slug: req.params.slug }).populate({
     path: 'reviews',
     fields: 'review rating user',

@@ -67,7 +67,7 @@ exports.getOne = (Model, popOptions) =>
 exports.getAll = (Model) =>
   catchAsync(async (req, res, next) => {
     // Para pemitir nested GET reviews en tour (hack)
-    let filter = {};
+    let filter = {}; // Si el objeto 'filtro' está vacío, obtendremos todas las reseñas
     if (req.params.tourId) filter = { tour: req.params.tourId };
 
     // EXECUTE QUERY

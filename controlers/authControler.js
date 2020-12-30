@@ -19,13 +19,14 @@ const createAndSendToken = (user, statusCode, req, res) => {
       Date.now() + process.env.JWT_COOKIE_EXPIERES_IN * 24 * 60 * 60 * 1000
     ),
     httpOnly: true,
+    // probar si una conexión es segura o no cuando tiene su aplicación implementada en Heroku
     secure: req.secure || req.headers('x-forwarderd-proto') === 'hpps', // Cambiado para heroku
   };
 
   //if (process.env.NODE_ENV === 'production') cookieOptions.secure = true; --> Cambiado para heroku
   res.cookie('jwt', token, cookieOptions);
 
-  //Remove the password from the output
+  // Eliminando el password de la salida de datos
   user.password = undefined;
 
   res.status(statusCode).json({
@@ -52,7 +53,7 @@ exports.signup = catchAsync(async (req, res, next) => {
 });
 
 exports.login = catchAsync(async (req, res, next) => {
-  const { email, password } = req.body;
+  const { email, password } = req.body; // destructuring
   //1) comprobar si email and password existe
   if (!email || !password) {
     return next(
@@ -61,6 +62,7 @@ exports.login = catchAsync(async (req, res, next) => {
   }
 
   //2) comprobar si el usuario existe y el password es correcto
+  // usamos "+password" ya que la contraseña NO será extriada por defecto del useModel.js
   const user = await User.findOne({ email }).select('+password');
 
   if (!user || !(await user.correctPassword(password, user.password))) {
@@ -119,6 +121,10 @@ exports.protect = catchAsync(async (req, res, next) => {
   }
 
   // OTORGAR ACCESO A LA RUTA PROTEGIDA - GRANT ACCESS TO PROTECTED ROUTE
+  // El objeto req es el que viaja de middleware a middleware
+  // ... entonces, si queremos pasar datos de un middleware al siguiente,
+  // luego podemos simplemente poner algunas cosas en el objeto de solicitud,
+  // ... y luego esos datos estarán disponibles en un momento posterior.
   req.user = currentUser;
   res.locals.user = currentUser;
   next();
@@ -147,6 +153,8 @@ exports.isLoggedIn = async (req, res, next) => {
       }
 
       // EL USUARIO ESTÁ LOGGEADO
+      // Cada una de las plantillas tiene acceso al res.locals.
+      // Cualquier cosa que pongamos en res.locals estará disponible en las plantillas
       res.locals.user = currentUser;
       return next();
     } catch (err) {
@@ -237,7 +245,6 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 
   // 3) Update changedPasswordAt property for the user
   // 4) Log the user in, send JWT
-
   createAndSendToken(user, 200, req, res);
 });
 
