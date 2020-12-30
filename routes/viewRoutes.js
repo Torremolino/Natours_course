@@ -1,7 +1,7 @@
 const express = require('express');
 const viewsContoller = require('../controlers/viewsControler');
 const authController = require('../controlers/authControler');
-const bookingController = require('../controlers/bookingControler');
+//const bookingController = require('../controlers/bookingControler');
 
 const router = express.Router();
 
@@ -9,7 +9,7 @@ const router = express.Router();
 
 router.get(
   '/',
-  bookingController.createBookingCheckout, //colocamos esto aquí temporalmente xq esta es la ruta de compra succesfuly
+  // bookingController.createBookingCheckout, //colocamos esto aquí temporalmente xq esta es la ruta de compra succesfuly hasta que no tengamos el webhook configurado
   authController.isLoggedIn,
   viewsContoller.getOverview
 );

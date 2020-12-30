@@ -16,6 +16,7 @@ const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
 const bookingRouter = require('./routes/bookingRoutes');
+const bookingControler = require('./routes/bookingRoutes');
 const viewRoutes = require('./routes/viewRoutes');
 
 // Star express app
@@ -57,6 +58,13 @@ const limiter = rateLimit({
   message: 'Too many requests from this IP, please try again in an hour!',
 });
 app.use('/api', limiter);
+
+// lo colocamos aqui xp stripe necesita el webhook en la RAW version
+app.post(
+  '/webhook-checkout',
+  express.raw({ type: 'application/json' }),
+  bookingControler.webhookCheckout
+);
 
 //Body parser, reading data from body into req.body
 app.use(express.json({ limit: '10kb' }));
