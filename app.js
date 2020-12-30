@@ -2,25 +2,25 @@ const path = require('path');
 const express = require('express');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
-const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
 const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
 const compression = require('compression');
 const cors = require('cors');
 
 const AppError = require('./utils/appError');
-const glogarErrorHandler = require('./controlers/errorControler');
+const globalErrorHandler = require('./controlers/errorControler');
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
 const bookingRouter = require('./routes/bookingRoutes');
-const bookingControler = require('./routes/bookingRoutes');
-const viewRoutes = require('./routes/viewRoutes');
+const bookingController = require('./controlers/bookingControler');
+const viewRouter = require('./routes/viewRoutes');
 
-// Star express app
+// Start express app
 const app = express();
 
 //Relacionado con probar si una conexión es segura o no cuando tiene su aplicación implementada en Heroku ---->ver authControler.js
@@ -29,8 +29,8 @@ app.enable('trust proxy');
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
 
-// 1) GLOBAL MIDDELWARES
-// implement CORS ->"CROS ORIGINAL SERVICE"
+// 1) GLOBAL MIDDLEWARES
+// Implement CORS --->"CROSS ORIGINAL SERVICE"
 app.use(cors());
 // Access-Control-Allow-Origin *
 // api.natours.com, front-end natours.com
@@ -41,6 +41,7 @@ app.use(cors());
 app.options('*', cors());
 // app.options('/api/v1/tours/:id', cors());
 
+// Serving static files
 //Serving stattic files
 //app.use(express.static(`${__dirname}/starter/public`));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -48,7 +49,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Establecer encabezados HTTP seguros
 app.use(helmet()); // helmet() debe estar el primero en nuestro middleware stack
 
-//Development logging
+// Development logging
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
@@ -58,7 +59,7 @@ if (process.env.NODE_ENV === 'development') {
 const limiter = rateLimit({
   max: 100,
   windowMs: 60 * 60 * 1000,
-  message: 'Demasiadas solicitudes desde esta IP, pruebe otra vez en una hora!',
+  message: 'Too many requests from this IP, please try again in an hour!',
 });
 app.use('/api', limiter);
 
@@ -66,7 +67,7 @@ app.use('/api', limiter);
 app.post(
   '/webhook-checkout',
   bodyParser.raw({ type: 'application/json' }),
-  bookingControler.webhookCheckout
+  bookingController.webhookCheckout
 );
 
 // Body parser, reading data from body into req.body
@@ -104,16 +105,13 @@ app.use(compression());
 
 // Test middleware
 app.use((req, res, next) => {
-  req.requesTime = new Date().toISOString();
-  // console.log(req.headers);
+  req.requestTime = new Date().toISOString();
   // console.log(req.cookies);
   next();
 });
 
-// 2)ROUTE HANDLERS
-
-// 3) ROUTES
-app.use('/', viewRoutes);
+// 2) ROUTES
+app.use('/', viewRouter);
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
@@ -131,12 +129,10 @@ app.all('*', (req, res, next) => {
   err.status = 'fail';
   err.statusCode = 404;*/
 
-  next(
-    new AppError(`Imposible alcanzar ${req.originalUrl} en este servidor`, 404)
-  );
+  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
 
-app.use(glogarErrorHandler);
+app.use(globalErrorHandler);
 
-// 4)ARRANCA EL SERVIDOR
+// 3) ARRANCAR EL SERVIDOR CONFIGURADO
 module.exports = app;
