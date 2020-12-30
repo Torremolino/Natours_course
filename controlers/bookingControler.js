@@ -18,17 +18,19 @@ exports.getCheckOutSession = catchAsync(async (req, res, next) => {
     // success_url: `${req.protocol}://${req.get('host')}/my-tours/?tour=${
     //   req.params.tourId
     // }&user=${req.user.id}&price=${tour.price}`, // esta no es una forma segura de hacerlo!!!!!
-    success_url: `${req.protocol}://${req.get('host')}/my-tours?alert=booking`,
+    success_url: `${req.protocol}://${req.get('host')}/my-tours`,
     cancel_url: `${req.protocol}://${req.get('host')}/tour/${tour.slug}`,
     customer_email: req.user.email,
     client_reference_id: req.params.tourId,
-    // información sobre el producto a comprar  ---> Cambios sugeridos en https://www.udemy.com/course/nodejs-express-mongodb-bootcamp/learn/lecture/15087442#questions/13208584
+    // información sobre el producto a comprar
+    // ---> Cambios sugeridos en https://www.udemy.com/course/nodejs-express-mongodb-bootcamp/learn/lecture/15087442#questions/13208584
+    mode: 'payment',
     line_items: [
       {
         quantity: 1,
         price_data: {
-          currency: 'eur',
-          unit_amount: tour.price * 100, // hay que multiplicarlo por 100 xq viene expresado en céntimos
+          currency: 'usd',
+          unit_amount: tour.price * 100,
           product_data: {
             name: `${tour.name} Tour`,
             description: tour.summary,
