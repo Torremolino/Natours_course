@@ -20,6 +20,8 @@ const viewRoutes = require('./routes/viewRoutes');
 // Star express app
 const app = express();
 
+app.enable('trust proxy'); //Cambiado para heroku ver authControler.js
+
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
 

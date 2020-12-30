@@ -45,3 +45,11 @@ process.on('unhandledRejection', (err) => {
     process.exit(1);
   });
 });
+
+process.on('SIGTERM', () => {
+  //esto es para apagar el servidor a la señal SIGTERM de heroku
+  console.log('👋 SIGTERM RECIBIDO, apagando servidor adecuadamente 👋 👋 ');
+  server.close(() => {
+    console.log('💥 Proceso terminado!');
+  });
+});
