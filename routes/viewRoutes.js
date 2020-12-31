@@ -5,6 +5,8 @@ const authController = require('../controlers/authControler');
 
 const router = express.Router();
 
+router.use(viewsContoller.alerts);
+
 //router.use(authController.isLoggedIn); lo pasamos a cada una de las rutas xq en /me duplicariamos los controles
 
 router.get('/', authController.isLoggedIn, viewsContoller.getOverview);
