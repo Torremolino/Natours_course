@@ -5,6 +5,7 @@ const slugify = require('slugify');
 
 const tourSchema = new mongoose.Schema(
   {
+    // SCHEMA DEFINITIONS
     name: {
       type: String,
       required: [true, 'El tour ha de tener un nombre'],
@@ -12,7 +13,7 @@ const tourSchema = new mongoose.Schema(
       trim: true, //Elimina todos los espacios al principio y al final de un String
       maxlength: [40, 'El nombre del tour deverá de tener =< de 40 caracteres'],
       minlength: [10, 'El nombre del tour deverá de tener >= de 10 caracteres'],
-      //validate: [validator.isAlpha,'El nombre del tour sólo debe contener letras']
+      //validate: [validator.isAlpha,'El nombre del tour sólo debe contener letras']// Ni nombres ni espacios son permitidos
     },
     slug: String,
     duration: {
@@ -51,6 +52,7 @@ const tourSchema = new mongoose.Schema(
       validate: {
         validator: function (val) {
           // this sólo apunta al documento actual en NUEVOS documentos a CREAR
+          // no se puede usar en update document.
           return val < this.price;
         },
         message: 'El descuento ({VALUE}) deberá ser menor que el precio normal',
@@ -109,18 +111,25 @@ const tourSchema = new mongoose.Schema(
     guides: [{ type: mongoose.Schema.ObjectId, ref: 'User' }],
   },
   {
-    //para mostrar campos calculados no guardados en la base de datos
+    // SCHEMA OPTIONS
+    //  virtuals, no serán guardados en la base de datos pero serán mostrados xq virtuals:true
+    //  Los virtuals se utilizan para campos que pueden derivar unos de otros, campos calculados no guardados en la base de datos
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
   }
 );
 
 //crear indexes
-tourSchema.index({ price: 1, ratingsAverage: -1 });
+// Single index :
+//tourSchema.index({ price: 1 });
+// Compound index :
+tourSchema.index({ price: 1, ratingsAverage: -1 }); // 1 ascedente -1 descendente
 tourSchema.index({ slug: 1 });
 tourSchema.index({ startLocation: '2dsphere' });
 
 tourSchema.virtual('durationWeeks').get(function () {
+  // use a regular function here because we use 'this'
+  // an arrow function does not get its own 'this' keyword
   return this.duration / 7;
 });
 
@@ -157,16 +166,19 @@ tourSchema.pre('save', async function (next) {
 });
 */
 
-// QUERY MIDDLEWARE:
+// QUERY MIDDLEWARE: RUNS BEFORE OR AFTER A QUERY IS EXECUTED
 //  tourSchema.pre('find', function (next) {
 tourSchema.pre(/^find/, function (next) {
-  this.find({ secretTour: { $ne: true } });
+  //se ejecuta con todas las consultas que empiezan con find - regular expression
 
+  // filtramos y sacamos los tours secretos
+  this.find({ secretTour: { $ne: true } });
   this.start = Date.now();
   next();
 });
 
 tourSchema.pre(/^find/, function (next) {
+  // 'this' apunta a la consulta actual
   this.populate({
     path: 'guides',
     select: '-__v -passwordChangedAt',
@@ -175,11 +187,11 @@ tourSchema.pre(/^find/, function (next) {
   next();
 });
 
-tourSchema.post(/^find/, function (docs, next) {
+/* tourSchema.post(/^find/, function (docs, next) {
   console.log(`La consulta ha tardado ${Date.now() - this.start} milisegundos`);
   //console.log(docs);
   next();
-});
+}); */
 
 // AGGREGATION MIDDLEWARE
 /*
@@ -189,6 +201,7 @@ tourSchema.pre('aggregate', function (next) {
   next();
 });
 */
+
 // Solución propuesta en los comentarios del curso
 tourSchema.pre('aggregate', function (next) {
   if (!Object.keys(this.pipeline()[0])[0] === '$geoNear')

@@ -1,5 +1,4 @@
 /* eslint-disable */
-
 import axios from 'axios';
 import { showAlert } from './alerts';
 
@@ -40,6 +39,7 @@ export const login = async (email, password) => {
     if (res.data.status === 'success') {
       showAlert('success', 'Legeado correctamente');
       window.setTimeout(() => {
+        // Para cargar otra página:
         location.assign('/');
       }, 1500);
     }

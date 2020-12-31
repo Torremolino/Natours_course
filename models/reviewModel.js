@@ -3,6 +3,7 @@ const Tour = require('./tourModel');
 
 const reviewSchema = new mongoose.Schema(
   {
+    // SCHEMA DEFINITIONS
     review: {
       type: String,
       required: [true, 'El comentario no puede estar vacío'],
@@ -26,12 +27,15 @@ const reviewSchema = new mongoose.Schema(
     },
   },
   {
-    //para mostrar campos calculados no guardados en la base de datos
+    // SCHEMA OPTIONS
+    //  virtuals, no serán guardados en la base de datos pero serán mostrados xq virtuals:true
+    //  Los virtuals se utilizan para campos que pueden derivar unos de otros, campos calculados no guardados en la base de datos
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
   }
 );
 
+// Para evitar que un usuario cree varias reseñas para el mismo tour
 reviewSchema.index({ tour: 1, user: 1 }, { unique: true });
 
 /*reviewSchema.pre(/^find/, function (next) {
@@ -54,6 +58,7 @@ reviewSchema.pre(/^find/, function (next) {
     select: '-_id name',
   });*/
 
+  // 'this' apunta a la consulta
   this.populate({
     path: 'user',
     select: '-_id name photo',
@@ -63,6 +68,7 @@ reviewSchema.pre(/^find/, function (next) {
 });
 
 reviewSchema.statics.calcAverageRatings = async function (tourId) {
+  // 'this' apunta al modelo
   const stats = await this.aggregate([
     {
       $match: { tour: tourId },
@@ -91,11 +97,18 @@ reviewSchema.statics.calcAverageRatings = async function (tourId) {
 };
 
 reviewSchema.post('save', function () {
-  // this points to current Review
+  // middleware
+  // this apunta al documento actual
+  // 'constructor' es el modelo que crea este documento
   this.constructor.calcAverageRatings(this.tour);
 });
 
 reviewSchema.pre(/^findOneAnd/, async function (next) {
+  // 'this' apunta a la consulta actual
+  // 'this.findOne ()' obtiene el documento 'antiguo' de la base de datos, pero solo nos interesa id del tour, así que eso no importa aquí.
+  // 'this.r' crea una nueva propiedad, r = al documento 'antiguo', en la consulta actual.
+  // Los datos con el ID del tour se pasan a través de la variable 'this', del pre-middleware al post-middleware.
+
   this.r = await this.findOne();
   //console.log(r);
   next();
@@ -103,6 +116,7 @@ reviewSchema.pre(/^findOneAnd/, async function (next) {
 
 reviewSchema.post(/^findOneAnd/, async function () {
   // await this.findOne(); does not work here, the query has already executed
+  // 'await this.findOne()' NO funciona aquí, porque la consulta ya se ha ejecutado, en su lugar, recuperamos el Id del tour de la review 'antigua' de la variable 'this.r.tour'. En este momento, la revisión se ha actualizado y podemos llamar a calcAverageRatings() con 'this.r.tour' como argumento.
   await this.r.constructor.calcAverageRatings(this.r.tour);
 });
 

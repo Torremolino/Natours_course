@@ -8,7 +8,7 @@ export const bookTour = async (tourId) => {
   );
 
   try {
-    //1) get the  check out session from api
+    //1) Obtener la check out session the la API
     /* 
     const session = await axios(
       `http://127.0.0.1:3000/api/v1/bookings/checkout-session/${tourId}`

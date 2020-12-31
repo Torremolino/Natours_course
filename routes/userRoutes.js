@@ -11,8 +11,9 @@ router.get('/logout', authControler.logout);
 router.post('/forgotPassword', authControler.forgotPassword);
 router.patch('/resetPassword/:token', authControler.resetPassword);
 
-router.use(authControler.protect); // con esto protejo todas las rutas que aparecen debajo de este punto
+// con esto protejo todas las rutas que aparecen debajo de este punto
 // este middleware se ejecuta antes que los siguientes. los middleware se ejecutan de forma secuencial
+router.use(authControler.protect);
 
 router.patch('/updateMyPassword', authControler.updatePassword);
 

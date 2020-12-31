@@ -71,7 +71,7 @@ if (userPasswordForm)
 if (bookBtn)
   bookBtn.addEventListener('click', (e) => {
     e.target.textContent = 'procesando...';
-    //const { tourId } = e.target.dataset;
+    //const { tourId } = e.target.dataset;// destructurado --> No lo utilizo xq me da un error q no encuentro
     const tourId = e.target.dataset.tourId; //e.target is the current
     //console.log(tourId);
     bookTour(tourId);

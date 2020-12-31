@@ -3,7 +3,7 @@
 import axios from 'axios';
 import { showAlert } from './alerts';
 
-// type es 'password' o 'data'
+// CLASIFICAR si es 'password' o 'data'
 export const updateSettings = async (data, type) => {
   try {
     const url =

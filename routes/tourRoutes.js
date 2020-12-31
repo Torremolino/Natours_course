@@ -6,10 +6,10 @@ const reviewRouter = require('./reviewRoutes');
 const router = express.Router();
 //router.param('id', tourCOntroler.checkID);
 
-// POST /tours/5efcdb0197b61e10d03e9d41/reviews
-// GET /tours/5efcdb0197b61e10d03e9d41/reviews
-// GET /tours/5efcdb0197b61e10d03e9d41/reviews/5f00422ee9afc4148cf46698
-router.use('/:tourId/reviews', reviewRouter);
+// NESTED ROUTES
+// POST   URL : /tour/<tourId>/reviews
+// GET    URL : /tour/<tourId>/reviews
+router.use('/:tourId/reviews', reviewRouter); //son derivadas al reviewRouter
 
 router
   .route('/top-5-cheap')

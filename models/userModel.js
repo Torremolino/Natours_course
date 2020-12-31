@@ -4,6 +4,7 @@ const validator = require('validator');
 const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
+  // SCHEMA DEFINITIONS
   name: {
     type: String,
     required: [true, 'Ha de indicar un nombre para el usuario'],
@@ -30,13 +31,13 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Por favor indique un password'],
     minlength: 8,
-    select: false, // con esto no será mostrado nunca
+    select: false, // con esto no será mostrado nunca en el output
   },
   passwordConfirm: {
     type: String,
     required: [true, 'Por favor confirma tu password'],
     validate: {
-      //this only work on CREATE and SAVE!!!!
+      // ¡¡los VALIDATE SOLO FUNCINAN en CREATE y SAVE!!!!
       validator: function (el) {
         return el === this.password;
       },
@@ -49,7 +50,7 @@ const userSchema = new mongoose.Schema({
   active: {
     type: Boolean,
     default: true,
-    select: false,
+    select: false, // No será visible en el output
   },
 });
 
@@ -60,6 +61,8 @@ userSchema.methods.correctPassword = async function (
   return await bcrypt.compare(candidatePassword, userPassword);
 };
 
+// AGGREGATION MIDDLEWARE
+// Se ejecutara antes del query 'save' :
 userSchema.pre('save', async function (next) {
   // Esto sólo funciona si el password es modificado
   if (!this.isModified('password')) return next();
@@ -67,8 +70,8 @@ userSchema.pre('save', async function (next) {
   // Encripta el password
   this.password = await bcrypt.hash(this.password, 12);
 
-  // Borra el campo de passwordConfirm xq no lo necesitamos
-  this.passwordConfirm = undefined; //No necesitamos guardarlo
+  // Borra el campo de passwordConfirm xq no necesitamos guardarlo
+  this.passwordConfirm = undefined;
   next();
 });
 
@@ -80,7 +83,8 @@ userSchema.pre('save', function (next) {
 });
 
 userSchema.pre(/^find/, function (next) {
-  // this poinst to the current query
+  // 'this' apunta a la consulta actual
+  // Sólo buscará documentos con active NO iguales a false :
   this.find({ active: { $ne: false } });
   next();
 });

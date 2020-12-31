@@ -36,7 +36,7 @@ export const displayMap = (locations) => {
       .setHTML(`<p>Day ${loc.day}: ${loc.description}</p>`)
       .addTo(map);
 
-    // Extend map bounds para incluir la localizacion actual
+    // Extender los límites del mapa para incluir la localizacion actual
     bounds.extend(loc.coordinates);
   });
 
